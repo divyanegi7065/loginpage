@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulse Auth Portal</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container Card -->
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-8">
+        
+        <!-- App Branding/Logo Header -->
+        <div class="text-center mb-8">
+            <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30 mx-auto mb-3">
+                <i class="fa-solid fa-bolt text-white text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">Welcome to Pulse</h1>
+            <p class="text-xs text-slate-400 mt-1">Manage your account credentials below</p>
+        </div>
+
+        <!-- Tab Toggle Buttons (Login vs Sign Up) -->
+        <div class="flex bg-slate-800/80 p-1 rounded-xl mb-6">
+            <button id="loginTabBtn" onclick="switchView('login')" class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all text-white bg-indigo-600 shadow-md">
+                Log In
+            </button>
+            <button id="signupTabBtn" onclick="switchView('signup')" class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all text-slate-400 hover:text-white">
+                Sign Up
+            </button>
+        </div>
+
+        <!-- Notification Banner / Alert Box -->
+        <div id="alertBox" class="hidden mb-4 p-3 rounded-xl text-sm flex items-center gap-2 border"></div>
+
+        <!-- LOGIN FORM SECTION -->
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Email Address</label>
+                <div class="relative">
+                    <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="email" id="loginEmail" required placeholder="name@company.com" class="w-full bg-slate-800/60 border border-slate-700/80 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Password</label>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-slate-800/60 border border-slate-700/80 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl shadow-lg shadow-indigo-600/30 transition-all mt-2">
+                Sign In to Account
+            </button>
+        </form>
+
+        <!-- SIGN UP FORM SECTION (Hidden by default) -->
+        <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-4 hidden">
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Email Address</label>
+                <div class="relative">
+                    <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="email" id="signupEmail" required placeholder="name@company.com" class="w-full bg-slate-800/60 border border-slate-700/80 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Create Password</label>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="password" id="signupPassword" required placeholder="••••••••" class="w-full bg-slate-800/60 border border-slate-700/80 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl shadow-lg shadow-indigo-600/30 transition-all mt-2">
+                Create Free Account
+            </button>
+        </form>
+
+    </div>
+
+    <!-- JAVASCRIPT & FIREBASE CREDENTIAL INTEGRATION -->
+    <script type="module">
+        // Import Firebase modules from official CDN link
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Your exact Firebase configuration credentials
+        const firebaseConfig = {
+          apiKey: "AIzaSyBMkEGvvpnv7WHONKBnk0_BrKoVbyHnEAo",
+          authDomain: "firstproj-dd611.firebaseapp.com",
+          projectId: "firstproj-dd611",
+          storageBucket: "firstproj-dd611.firebasestorage.app",
+          messagingSenderId: "254587017475",
+          appId: "1:254587017475:web:91bb04b62a234f99637136",
+          measurementId: "G-KHS86FLKJ5"
+        };
+
+        // Initialize Firebase services
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Handle Signup Action
+        window.handleSignup = async function(event) {
+            event.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                showAlert("Account successfully created! You can now log in.", "success");
+            } catch (error) {
+                showAlert(error.message, "error");
+            }
+        };
+
+        // Handle Login Action
+        window.handleLogin = async function(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showAlert("Logged in successfully! Redirecting...", "success");
+            } catch (error) {
+                showAlert(error.message, "error");
+            }
+        };
+    </script>
+
+    <!-- UI Interaction Script (Tabs & Alerts) -->
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const loginTabBtn = document.getElementById('loginTabBtn');
+        const signupTabBtn = document.getElementById('signupTabBtn');
+        const alertBox = document.getElementById('alertBox');
+
+        function switchView(mode) {
+            hideAlert();
+            if (mode === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                loginTabBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all text-white bg-indigo-600 shadow-md";
+                signupTabBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all text-slate-400 hover:text-white";
+            } else {
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                signupTabBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all text-white bg-indigo-600 shadow-md";
+                loginTabBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all text-slate-400 hover:text-white";
+            }
+        }
+
+        function showAlert(message, type) {
+            alertBox.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/30', 'bg-rose-500/20', 'text-rose-300', 'border-rose-500/30');
+            
+            if (type === 'success') {
+                alertBox.classList.add('bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/30');
+                alertBox.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+            } else {
+                alertBox.classList.add('bg-rose-500/20', 'text-rose-300', 'border-rose-500/30');
+                alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${message}</span>`;
+            }
+        }
+
+        function hideAlert() {
+            alertBox.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
